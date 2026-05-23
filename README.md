@@ -1,4 +1,4 @@
-# 🔵 logica
+# 🔵 logica (Test)
 
 **why use many token when few token do trick — maar dan met wiskunde**
 
@@ -75,7 +75,7 @@ agent-naar-agent       → ULTRA
 
 ---
 
-## Waarom XML + propositielogica en niet Chinees?
+## Waarom XML + propositielogica en niet een andere taal?
 
 Claude's tokenizer (BPE) groepeert ASCII-tekens tot ~4 chars/token.
 Elk Chinees karakter = ~1 token. Dus `<route>DEV=code</route>` (17 chars, ~4 tokens)
@@ -102,7 +102,6 @@ Logica (combo):   ~18 tokens  (-75%)
 | Windsurf | Rule file | ✓ |
 | Gemini CLI | Extensie | ✓ |
 | Cline | Rule file | ✓ |
-| MikeOS | Memory.md + ADA skill | ✓ |
 | Overige | npx skills | handmatig |
 
 ---
@@ -119,4 +118,4 @@ npx @mburghout/logica --uninstall
 
 ## Licentie
 
-MIT — compress vrij als wilde mammoth op vlakte.
+MIT — vrij geen garanties 
