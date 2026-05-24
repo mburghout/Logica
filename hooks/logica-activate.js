@@ -1,54 +1,40 @@
 #!/usr/bin/env node
 /**
  * logica — SessionStart hook
- * Als ~/.logica-active bestaat: injecteer compressor-instructie als hidden system context.
- * Claude ziet het, gebruiker niet.
+ * Injecteert een korte, mode-specifieke instructie — niet de hele SKILL.md.
+ * Filosofie: kortere instructie = betrouwbaarder opgevolgd.
  */
 
-const fs = require('fs');
-const os = require('os');
+const fs   = require('fs');
+const os   = require('os');
 const path = require('path');
 
 const FLAG = path.join(os.homedir(), '.logica-active');
-const SKILL = path.join(os.homedir(), '.logica', 'skills', 'logica', 'SKILL.md');
 
-function getMode() {
-  try {
-    const content = fs.readFileSync(FLAG, 'utf8').trim();
-    return content || 'full';
-  } catch {
-    return null;
-  }
-}
+// Mode-specifieke instructies — zo kort mogelijk, zo precies mogelijk.
+// Vóór alle andere context: hogere instructie-prioriteit.
+const PROMPTS = {
+  full: `LOGICA FULL — verplicht voor ALLE output in deze sessie:
+Structuur: <r><kern>antwoord</kern><stap n="1">stap</stap><res>conclusie</res></r>
+Relaties: → ∧ ∨ ∈ ≡ ¬  Routes: A|B|C  Mappings: X↦Y
+0 lidwoorden in tags. 0 opvulzinnen. 0 beleefdheden. Code altijd ongewijzigd.
+Stop: /logica off`,
 
-function getSkillContent() {
-  try {
-    return fs.readFileSync(SKILL, 'utf8');
-  } catch {
-    // Fallback inline als SKILL.md niet gevonden
-    return null;
-  }
-}
+  lite: `LOGICA LITE — verplicht voor ALLE output in deze sessie:
+Compact proza. 0 stopwoorden. 0 lidwoorden. Structuur behouden. Code ongewijzigd.
+Stop: /logica off`,
 
-const mode = getMode();
+  ultra: `LOGICA ULTRA — verplicht voor ALLE output:
+<r><kern/><res/></r> · →∧∨∈¬ · 0filler · code=orig · 1woord=genoeg
+Stop: /logica off`,
+};
 
-if (mode) {
-  const skill = getSkillContent();
-  const modeUpper = mode.toUpperCase();
-
-  if (skill) {
-    process.stdout.write(skill);
-  } else {
-    // Inline fallback — minimale versie
-    process.stdout.write(`<logica-mode>${modeUpper}</logica-mode>
-Comprimeer ALLE output: XML-structuur + propositielogica symbolen (→∧∨∈¬∀∃).
-0 lidwoorden in tags. 0 opvulzinnen. Code blocks ongewijzigd.
-Mode ${modeUpper}: ${mode === 'ultra' ? 'maximale compressie' : mode === 'lite' ? 'compact maar leesbaar' : 'standaard XML+logica'}.
-Stop: /logica off`);
-  }
-
-  process.exit(0);
-} else {
+try {
+  const mode = fs.readFileSync(FLAG, 'utf8').trim();
+  const instructie = PROMPTS[mode] || PROMPTS.full;
+  process.stdout.write(instructie);
+} catch {
   // Niet actief — stil afsluiten
-  process.exit(0);
 }
+
+process.exit(0);

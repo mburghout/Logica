@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 /**
  * logica — UserPromptSubmit hook
- * Detecteert /logica commando's en schrijft mode naar ~/.logica-active
- * Zodat de volgende SessionStart hook weet welke mode actief is.
+ * Detecteert /logica commando's, schrijft mode naar ~/.logica-active,
+ * toont statusberichten en handelt expand/stats af.
  */
 
-const fs = require('fs');
-const os = require('os');
+const fs   = require('fs');
+const os   = require('os');
 const path = require('path');
 
-const FLAG = path.join(os.homedir(), '.logica-active');
+const FLAG      = path.join(os.homedir(), '.logica-active');
+const STATS_LOG = path.join(os.homedir(), '.logica-stats.json');
 
-// Lees stdin (Claude Code stuurt prompt als JSON naar stdin)
 let input = '';
 process.stdin.on('data', d => input += d);
 process.stdin.on('end', () => {
@@ -23,33 +23,64 @@ process.stdin.on('end', () => {
     prompt = input.toLowerCase().trim();
   }
 
-  // Activeer commando's
-  const activateFull  = /^\/(logica|logica\s+full)$/.test(prompt) || prompt.includes('logica modus') || prompt.includes('minder tokens') || prompt.includes('comprimeer');
-  const activateLite  = /^\/logica\s+lite$/.test(prompt);
-  const activateUltra = /^\/logica\s+ultra$/.test(prompt);
-  const deactivate    = /^\/logica\s+off$/.test(prompt) || prompt.includes('normaal mode') || prompt.includes('stop logica');
-  const statsCmd      = /^\/logica\s+stats$/.test(prompt);
-  const expandCmd     = /^\/logica\s+expand$/.test(prompt);
+  const isOff     = /^\/logica\s+off$/.test(prompt) || prompt === 'normaal mode' || prompt === 'stop logica';
+  const isUltra   = /^\/logica\s+ultra$/.test(prompt);
+  const isLite    = /^\/logica\s+lite$/.test(prompt);
+  const isFull    = /^\/(logica|logica\s+full)$/.test(prompt) || prompt.includes('logica modus') || prompt.includes('minder tokens');
+  const isExpand  = /^\/logica\s+expand$/.test(prompt);
+  const isStats   = /^\/logica\s+stats$/.test(prompt);
 
-  if (deactivate) {
+  if (isOff) {
     try { fs.unlinkSync(FLAG); } catch {}
-    process.stdout.write(JSON.stringify({ statusMessage: '⬜ logica: off' }));
-  } else if (activateUltra) {
+    out({ statusMessage: '⬜ logica: off' });
+  } else if (isUltra) {
     fs.writeFileSync(FLAG, 'ultra');
-    process.stdout.write(JSON.stringify({ statusMessage: '🪨 logica: ULTRA' }));
-  } else if (activateLite) {
+    out({ statusMessage: '🪨 logica: ULTRA actief' });
+  } else if (isLite) {
     fs.writeFileSync(FLAG, 'lite');
-    process.stdout.write(JSON.stringify({ statusMessage: '🔵 logica: LITE' }));
-  } else if (activateFull) {
+    out({ statusMessage: '🔵 logica: LITE actief' });
+  } else if (isFull) {
     fs.writeFileSync(FLAG, 'full');
-    process.stdout.write(JSON.stringify({ statusMessage: '🟢 logica: FULL' }));
-  } else if (statsCmd || expandCmd) {
-    // Doorgeven aan Claude — geen mode-wijziging
-    process.stdout.write(JSON.stringify({ statusMessage: '' }));
+    out({ statusMessage: '🟢 logica: FULL actief' });
+  } else if (isExpand) {
+    // Signaleer aan Claude: expand modus — geen XML, leesbaar Nederlands
+    out({ statusMessage: '📖 logica: expand — herschrijf naar leesbaar NL' });
+  } else if (isStats) {
+    const stats = leesStats();
+    out({ statusMessage: `📊 logica: ~${stats.sessie} tokens bespaard deze sessie` });
   } else {
-    // Geen logica-commando — stil doorgaan
-    process.stdout.write(JSON.stringify({ statusMessage: '' }));
+    // Gewone prompt — tel sessie-tokens bij (ruwe schatting: 4 chars/token)
+    const woorden = prompt.split(/\s+/).length;
+    const mode    = huidigeMode();
+    if (mode) {
+      const reductie = mode === 'ultra' ? 0.75 : mode === 'lite' ? 0.30 : 0.55;
+      slaStatsOp(Math.round(woorden * reductie));
+    }
+    out({ statusMessage: '' });
   }
-
-  process.exit(0);
 });
+
+function out(obj) {
+  process.stdout.write(JSON.stringify(obj));
+  process.exit(0);
+}
+
+function huidigeMode() {
+  try { return fs.readFileSync(FLAG, 'utf8').trim(); } catch { return null; }
+}
+
+function leesStats() {
+  try {
+    const data = JSON.parse(fs.readFileSync(STATS_LOG, 'utf8'));
+    return { sessie: data.sessie || 0, totaal: data.totaal || 0 };
+  } catch {
+    return { sessie: 0, totaal: 0 };
+  }
+}
+
+function slaStatsOp(bespaard) {
+  const stats = leesStats();
+  stats.sessie = (stats.sessie || 0) + bespaard;
+  stats.totaal = (stats.totaal || 0) + bespaard;
+  try { fs.writeFileSync(STATS_LOG, JSON.stringify(stats)); } catch {}
+}

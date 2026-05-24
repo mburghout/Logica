@@ -174,7 +174,7 @@ run(() => {
     } else {
       // Schrijf inline versie
       const content = hook === 'logica-activate.js'
-        ? `#!/usr/bin/env node\nconst fs=require('fs'),os=require('os'),path=require('path');\nconst FLAG=path.join(os.homedir(),'.logica-active');\nconst SKILL=path.join(os.homedir(),'.logica','skills','logica','SKILL.md');\ntry{\n  const mode=fs.readFileSync(FLAG,'utf8').trim();\n  if(mode){\n    try{ process.stdout.write(fs.readFileSync(SKILL,'utf8')); }\n    catch{ process.stdout.write(\`<logica>\${mode.toUpperCase()}</logica>\\nComprimeer output: XML+proplogica. 0filler. Code intact.\`); }\n  }\n}catch{}\nprocess.exit(0);\n`
+        ? `#!/usr/bin/env node\nconst fs=require('fs'),os=require('os'),path=require('path');\nconst FLAG=path.join(os.homedir(),'.logica-active');\nconst P={full:'LOGICA FULL — verplicht:\\n<r><kern/><stap n/><res/></r> · →∧∨∈≡¬ · 0lidw · 0vulw · code intact\\nStop:/logica off',lite:'LOGICA LITE — verplicht:\\nCompact. 0stopwoorden. 0lidwoorden. Code intact.\\nStop:/logica off',ultra:'LOGICA ULTRA:\\n<r><kern/><res/></r>·→∧∨∈¬·0filler·code=orig\\nStop:/logica off'};\ntry{const m=fs.readFileSync(FLAG,'utf8').trim();if(m)process.stdout.write(P[m]||P.full);}catch{}\nprocess.exit(0);\n`
         : `#!/usr/bin/env node\nconst fs=require('fs'),os=require('os'),path=require('path');\nconst FLAG=path.join(os.homedir(),'.logica-active');\nlet input='';\nprocess.stdin.on('data',d=>input+=d);\nprocess.stdin.on('end',()=>{\n  const p=(()=>{try{const j=JSON.parse(input);return(j.prompt||j.message||'').toLowerCase();}catch{return input.toLowerCase();}})();\n  if(/\\/logica\\s+off/.test(p)||p.includes('normaal mode')){try{fs.unlinkSync(FLAG);}catch{}process.stdout.write(JSON.stringify({statusMessage:'⬜ logica: off'}));}\n  else if(/\\/logica\\s+ultra/.test(p)){fs.writeFileSync(FLAG,'ultra');process.stdout.write(JSON.stringify({statusMessage:'🪨 logica: ULTRA'}));}\n  else if(/\\/logica\\s+lite/.test(p)){fs.writeFileSync(FLAG,'lite');process.stdout.write(JSON.stringify({statusMessage:'🔵 logica: LITE'}));}\n  else if(/^\\/logica/.test(p)||p.includes('logica modus')){fs.writeFileSync(FLAG,'full');process.stdout.write(JSON.stringify({statusMessage:'🟢 logica: FULL'}));}\n  else process.stdout.write(JSON.stringify({statusMessage:''}));\n  process.exit(0);\n});\n`;
       fs.writeFileSync(dst, content);
     }
@@ -262,6 +262,19 @@ function installGemini() {
   ok('Gemini CLI ✓');
 }
 
+// --- Cline ---
+function installCline() {
+  const clineDir = path.join(HOME, '.clinerules');
+  if (!exists(clineDir) && !exists(path.join(HOME, '.vscode', 'extensions'))) return;
+  info('Cline');
+  run(() => {
+    mkdirp(clineDir);
+    fs.writeFileSync(path.join(clineDir, 'logica.md'), RULE_CONTENT);
+  });
+  installed.push('cline');
+  ok('Cline ✓');
+}
+
 // --- MikeOS ---
 function installMikeOS() {
   const mikeDir = path.join(HOME, 'Mike app', '_zakelijk', 'mikeos');
@@ -291,6 +304,7 @@ if (!only || only === 'claude-code') try { installClaudeCode(); } catch {}
 if (!only || only === 'cursor')      try { installCursor(); } catch {}
 if (!only || only === 'windsurf')    try { installWindsurf(); } catch {}
 if (!only || only === 'gemini')      try { installGemini(); } catch {}
+if (!only || only === 'cline')       try { installCline(); } catch {}
 if (!only || only === 'mikeos')      try { installMikeOS(); } catch {}
 
 // Standaard mode instellen
