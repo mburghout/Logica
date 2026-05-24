@@ -1,4 +1,4 @@
-# 🔵 logica (Test)
+# 🔵 logica
 
 **why use many token when few token do trick — maar dan met wiskunde**
 
@@ -90,6 +90,46 @@ XML-compressed:   ~28 tokens  (-60%)
 Propositielogica: ~24 tokens  (-66%)
 Logica (combo):   ~18 tokens  (-75%)
 ```
+
+---
+
+## Logica vs Caveman
+
+Beide reduceren tokens. Ze doen het anders.
+
+| | Caveman | Logica |
+|---|---|---|
+| **Methode** | Taalstijl strippen | Structuur omzetten naar XML+symbolen |
+| **Output** | Terse proza | Machine-parseable XML |
+| **Leesbaar voor mensen** | ✓ Ja | △ Minder |
+| **Leesbaar voor agents** | △ Nog steeds proza | ✓ Expliciet gestructureerd |
+| **Tokenreductie** | ~60–70% | ~65–75% |
+| **Code blocks** | Ongewijzigd | Ongewijzigd |
+| **Ideaal voor** | Chatgesprekken, uitleg | Agentic pipelines, tool-output, data |
+| **Combineerbaar** | ✓ | ✓ |
+
+**Het kernverschil:** caveman comprimeert *stijl*. Logica comprimeert *structuur*. Een volgende agent in een pipeline hoeft logica-output niet te interpreteren — de structuur is al expliciet. Caveman-output is nog steeds proza, hoe compact ook.
+
+### Wanneer wat
+
+```
+mens leest output            → caveman
+agent verwerkt output        → logica
+lang gesprek, kleine context → logica ultra
+debuggen / uitleggen         → caveman lite
+beide actief                 → gaat prima, logica wint op structuur
+```
+
+### Combineren
+
+Caveman en logica bijten elkaar niet. Je kunt ze allebei aanzetten:
+
+```
+/logica
+/caveman lite
+```
+
+Claude comprimééert de structuur (logica) én de stijl (caveman). Maximale reductie voor agentic gebruik.
 
 ---
 
