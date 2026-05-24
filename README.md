@@ -24,7 +24,7 @@ XML + propositielogica compressor. ~75% tokenreductie. Volledig LLM-begrip. Alle
 curl -fsSL https://raw.githubusercontent.com/mburghout/logica/main/install.sh | bash
 
 # Of via npx
-npx @mburghout/logica
+npx logica-skill
 
 # Specifieke agent
 bash install.sh --only claude-code
@@ -151,7 +151,7 @@ Claude comprimééert de structuur (logica) én de stijl (caveman). Maximale red
 ```bash
 bash install.sh --uninstall
 # of
-npx @mburghout/logica --uninstall
+npx logica-skill --uninstall
 ```
 
 ---

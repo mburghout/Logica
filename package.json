@@ -1,5 +1,5 @@
 {
-  "name": "@mburghout/logica",
+  "name": "logica-skill",
   "version": "1.1.0",
   "description": "🔵 XML+propositielogica token compressor — ~75% minder tokens, perfect begrip",
   "main": "bin/install.js",
@@ -10,11 +10,32 @@
     "install-tool": "node bin/install.js",
     "uninstall": "node bin/install.js --uninstall"
   },
-  "keywords": ["llm", "tokens", "compression", "claude", "claude-code", "cursor", "windsurf", "cline", "gemini", "prompt-engineering", "xml", "logic"],
+  "keywords": [
+    "llm",
+    "tokens",
+    "compression",
+    "claude",
+    "claude-code",
+    "cursor",
+    "windsurf",
+    "cline",
+    "gemini",
+    "prompt-engineering",
+    "xml",
+    "logic"
+  ],
   "author": "mburghout",
   "license": "MIT",
-  "engines": { "node": ">=18" },
-  "files": ["bin/", "hooks/", "skills/", "install.sh", "README.md"],
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "bin/",
+    "hooks/",
+    "skills/",
+    "install.sh",
+    "README.md"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/mburghout/Logica.git"
